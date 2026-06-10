@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz de Imunologia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1f2435;
+    --border: #2a3048;
+    --accent: #4f8ef7;
+    --accent2: #7c5cf7;
+    --green: #22c67a;
+    --red: #f7546a;
+    --text: #e8eaf0;
+    --muted: #7a84a3;
+    --radius: 14px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+    max-width: 600px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.25);
+    border-radius: 99px;
+    padding: 4px 14px;
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(26px, 5vw, 40px);
+    font-weight: 800;
+    line-height: 1.15;
+    background: linear-gradient(135deg, #4f8ef7, #7c5cf7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 24px;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 20px;
+  }
+
+  .question-num {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .question-text {
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.55;
+    margin-bottom: 22px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-size: 14.5px;
+    line-height: 1.45;
+    text-align: left;
+    color: var(--text);
+    width: 100%;
+  }
+
+  .option:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(79,142,247,0.07);
+  }
+
+  .option .letter {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-top: 1px;
+    transition: all 0.18s;
+  }
+
+  .option.correct {
+    border-color: var(--green);
+    background: rgba(34,198,122,0.08);
+  }
+  .option.correct .letter { background: var(--green); color: #fff; }
+
+  .option.wrong {
+    border-color: var(--red);
+    background: rgba(247,84,106,0.08);
+  }
+  .option.wrong .letter { background: var(--red); color: #fff; }
+
+  .option:disabled { cursor: default; }
+
+  /* Feedback */
+  .feedback {
+    display: none;
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.ok { background: rgba(34,198,122,0.1); border: 1px solid rgba(34,198,122,0.25); color: #6ee7b0; }
+  .feedback.err { background: rgba(247,84,106,0.1); border: 1px solid rgba(247,84,106,0.25); color: #fda4af; }
+
+  /* Nav */
+  .nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    max-width: 680px;
+    width: 100%;
+  }
+
+  button.btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 26px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  /* Results */
+  #results {
+    display: none;
+    text-align: center;
+    max-width: 680px;
+    width: 100%;
+  }
+
+  .score-ring {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) 0deg, var(--accent2) var(--score-angle, 0deg), var(--border) var(--score-angle, 0deg));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    position: relative;
+  }
+
+  .score-ring-inner {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-num {
+    font-family: 'Sora', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .score-label { font-size: 11px; color: var(--muted); }
+
+  #results h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  #results p { color: var(--muted); margin-bottom: 28px; font-size: 15px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+
+  .stat-box .stat-val {
+    font-family: 'Sora', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    display: block;
+  }
+
+  .stat-box .stat-name { font-size: 13px; color: var(--muted); }
+  .stat-box.g .stat-val { color: var(--green); }
+  .stat-box.r .stat-val { color: var(--red); }
+
+  /* Start screen */
+  #start-screen {
+    text-align: center;
+    max-width: 480px;
+  }
+
+  .start-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px 28px;
+    margin-bottom: 24px;
+  }
+
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .topic-tag {
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.2);
+    color: var(--accent);
+    border-radius: 99px;
+    padding: 5px 12px;
+  }
+
+  #quiz-section { display: none; width: 100%; align-items: center; flex-direction: column; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Estudo</div>
+  <h1>Quiz de Imunologia</h1>
+  <p>40 questões · Diferenciação de Linfócitos, Defesas, Transplantes, Hipersensibilidades</p>
+</header>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <div class="start-card">
+    <p style="color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:0">Teste seus conhecimentos baseado no resumo de Imunologia. Cada questão tem apenas uma resposta correta. A explicação aparece após cada resposta.</p>
+    <div class="topics">
+      <span class="topic-tag">Linfócitos T</span>
+      <span class="topic-tag">Linfócitos B</span>
+      <span class="topic-tag">Tolerância</span>
+      <span class="topic-tag">Defesas</span>
+      <span class="topic-tag">Transplantes</span>
+      <span class="topic-tag">Hipersensibilidades</span>
+      <span class="topic-tag">Tecidos</span>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="startQuiz()">Começar Quiz →</button>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-section">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="prog-text">Questão 1 de 40</span>
+      <span id="score-text">Acertos: 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="question-num" id="q-num">QUESTÃO 01</div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options" id="q-options"></div>
+    <div class="feedback" id="q-feedback"></div>
+  </div>
+
+  <div class="nav">
+    <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()" disabled>Próxima →</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="score-ring" id="score-ring">
+    <div class="score-ring-inner">
+      <span class="score-num" id="res-pct">0%</span>
+      <span class="score-label">Acerto</span>
+    </div>
+  </div>
+  <h2 id="res-title">Quiz finalizado!</h2>
+  <p id="res-msg"></p>
+  <div class="stats-grid">
+    <div class="stat-box g"><span class="stat-val" id="res-correct">0</span><span class="stat-name">Corretas</span></div>
+    <div class="stat-box r"><span class="stat-val" id="res-wrong">0</span><span class="stat-name">Erradas</span></div>
+  </div>
+  <button class="btn btn-primary" onclick="restart()">Tentar novamente</button>
+</div>
+
+<script>
+const questions = [
+  // --- LINFÓCITO T ---
+  {
+    q: "Qual é a principal molécula produzida pelo LTH1 e qual é sua função?",
+    opts: ["IL-4, estimula mastócitos", "IFN-γ, estimula macrófagos pela via clássica", "IL-17, recruta neutrófilos", "IL-5, ativa eosinófilos"],
+    ans: 1,
+    exp: "O LTH1 produz principalmente o Interferon Gama (IFN-γ), que estimula macrófagos pela via clássica para combater microrganismos intracelulares."
+  },
+  {
+    q: "O LTH1 é especializado no combate a quais tipos de microrganismos?",
+    opts: ["Parasitas extracelulares e helmintos", "Fungos extracelulares apenas", "Microrganismos intracelulares (bactérias, vírus, fungos)", "Apenas bactérias extracelulares"],
+    ans: 2,
+    exp: "O LTH1 combate microrganismos INTRAcelulares, como bactérias, vírus e fungos intracelulares."
+  },
+  {
+    q: "Qual é o efeito deletério (negativo) da hiperestimulação do LTH1?",
+    opts: ["Reações alérgicas", "Lesão tisular", "Inflamação crônica", "Choque anafilático"],
+    ans: 1,
+    exp: "Quando o LTH1 é hiperestimulado, ele causa lesão tisular — uma característica associada à atividade excessiva do macrófago."
+  },
+  {
+    q: "Quais interleucinas o LTH2 produz para agir contra parasitas/helmintos?",
+    opts: ["IL-1, IL-6 e IL-12", "IL-17 e IL-22", "IL-4, IL-5 e IL-13", "IFN-γ e TNF"],
+    ans: 2,
+    exp: "O LTH2 produz IL-4, IL-5 e IL-13, que ativam eosinófilos, mastócitos e macrófagos (pela via alternativa) e estimulam o peristaltismo."
+  },
+  {
+    q: "O LTH2 ativa macrófagos por qual via?",
+    opts: ["Via clássica", "Via alternativa", "Via da lectina", "Via do complemento"],
+    ans: 1,
+    exp: "O LTH2 ativa macrófagos exclusivamente pela via alternativa — nunca pela via clássica, que é domínio do LTH1."
+  },
+  {
+    q: "Qual é o efeito deletério do LTH2?",
+    opts: ["Lesão tisular", "Inflamações crônicas", "Reações alérgicas", "Doenças autoimunes"],
+    ans: 2,
+    exp: "O efeito deletério do LTH2 são as reações alérgicas, pois ele estimula IgE, mastócitos e eosinófilos."
+  },
+  {
+    q: "O LTH17 trabalha sempre junto com qual outra célula?",
+    opts: ["LTH2", "LTreg", "LTH1", "LTCD8+"],
+    ans: 2,
+    exp: "O LTH17 trabalha sempre junto com o TH1. Ambos colaboram na defesa contra fungos e microrganismos extracelulares."
+  },
+  {
+    q: "Quais moléculas o LTH17 libera e qual é sua função?",
+    opts: ["IL-4 e IL-5, ativam eosinófilos", "IFN-γ, estimula macrófagos", "IL-17 e IL-22, recrutam neutrófilos e monócitos", "IL-10, inibe inflamação"],
+    ans: 2,
+    exp: "O LTH17 libera IL-17 e IL-22, que recrutam neutrófilos e monócitos e ajudam na imunidade de barreiras."
+  },
+  {
+    q: "Se o Linfócito T Folicular Humano (LTFH) for estimulado pelo TH1, qual anticorpo será produzido?",
+    opts: ["IgE", "IgA", "IgM", "IgG"],
+    ans: 3,
+    exp: "Quando o LTFH é estimulado pelo TH1, o anticorpo produzido é o IgG."
+  },
+  {
+    q: "Se o LTFH for estimulado pelo TH2, qual anticorpo será produzido?",
+    opts: ["IgG", "IgM", "IgE", "IgA"],
+    ans: 2,
+    exp: "A estimulação do LTFH pelo TH2 leva à produção de IgE, anticorpo relacionado a alergias."
+  },
+  {
+    q: "Qual proteína é determinante para a diferenciação no Linfócito T Regulador (LTreg)?",
+    opts: ["AIRE", "TCR", "FOXP3", "B7-1"],
+    ans: 2,
+    exp: "A proteína FOXP3 é o fator determinante para a diferenciação no LTreg, que regula a resposta imunológica."
+  },
+  {
+    q: "Quais são as duas origens do LTreg?",
+    opts: ["Medula e linfonodos", "Timo e medula", "Timo e linfonodos", "Baço e timo"],
+    ans: 2,
+    exp: "Os LTregs têm dois locais de origem: o timo (LTtreg) e os linfonodos (LTpreg)."
+  },
+  {
+    q: "Qual é a única possibilidade do LTCD8+ ao amadurecer?",
+    opts: ["Tornar-se LTH1 ou LTH2", "Tornar-se LTreg", "Tornar-se Linfócito T citolítico (citotóxico)", "Tornar-se LTFH"],
+    ans: 2,
+    exp: "O LTCD8+ só pode virar o Linfócito T citolítico (LTCTL), também chamado de citotóxico."
+  },
+  // --- TOLERÂNCIA ---
+  {
+    q: "Para quê serve a seleção negativa?",
+    opts: ["Aumentar a produção de anticorpos", "Evitar doenças autoimunes", "Estimular a resposta inflamatória", "Ativar o sistema complemento"],
+    ans: 1,
+    exp: "A seleção negativa serve para evitar doenças autoimunes, eliminando linfócitos que reconhecem antígenos próprios do corpo."
+  },
+  {
+    q: "Onde ocorre a tolerância central do linfócito T?",
+    opts: ["Linfonodos", "Baço", "Medula óssea", "Timo"],
+    ans: 3,
+    exp: "A tolerância central do linfócito T ocorre no timo, enquanto a do linfócito B ocorre na medula óssea."
+  },
+  {
+    q: "Quais células participam da tolerância central do linfócito T no timo?",
+    opts: ["Células dendríticas e macrófagos", "MTEC e proteína AIRE", "Células NK e LTreg", "Neutrófilos e mastócitos"],
+    ans: 1,
+    exp: "A MTEC (célula epitelial medular tímica) junto com a proteína AIRE apresentam antígenos próprios e eliminam por apoptose os linfócitos que os reconhecem."
+  },
+  {
+    q: "Na tolerância periférica, o que é Anergia?",
+    opts: ["A morte do linfócito por apoptose", "O linfócito fica sem atividade por ausência de co-estimulador", "A supressão pelo LTreg via CTLA-4", "A ativação excessiva do linfócito"],
+    ans: 1,
+    exp: "Anergia ocorre quando a célula dendrítica apresenta o antígeno, mas há ausência de um co-estimulador (B7-1 ou B7-2), deixando o linfócito T sem atividade."
+  },
+  {
+    q: "Na tolerância periférica, como ocorre a Supressão?",
+    opts: ["A célula dendrítica mata o linfócito por apoptose", "O LTreg captura o segundo co-estimulador via CTLA-4, deixando o linfócito anérgico", "O linfócito perde seu receptor TCR", "A MTEC apresenta antígenos próprios ao linfócito"],
+    ans: 1,
+    exp: "Na supressão, o LTreg usa o CTLA-4 para capturar o segundo co-estimulador que seria apresentado ao linfócito T, tornando-o anérgico."
+  },
+  {
+    q: "No linfócito B, se ele reconhecer um antígeno próprio na medula, quais são suas opções?",
+    opts: ["Apoptose ou anergia permanente", "Mudança de receptor ou apoptose", "Ativação e diferenciação em plasmócito", "Migração para os linfonodos"],
+    ans: 1,
+    exp: "Na tolerância central do linfócito B, ao reconhecer um antígeno próprio, ele pode mudar de receptor (edição de receptor) ou sofrer apoptose."
+  },
+  {
+    q: "O que acontece com o linfócito B que reconhece um antígeno fraco?",
+    opts: ["Ele sofre apoptose imediatamente", "Ele se diferencia em plasmócito", "Ele permanece anérgico", "Ele migra para o baço"],
+    ans: 2,
+    exp: "Se o linfócito B reconhecer um antígeno fraco, ele permanece anérgico — sem atividade imunológica."
+  },
+  // --- DEFESAS ---
+  {
+    q: "Quais anticorpos o sistema imunológico adaptativo usa contra bactérias extracelulares?",
+    opts: ["IgE, IgD e IgA", "IgG, IgM e IgA", "IgG e IgE apenas", "IgM e IgD apenas"],
+    ans: 1,
+    exp: "Contra bactérias extracelulares, o sistema adaptativo usa IgG, IgM e IgA como anticorpos."
+  },
+  {
+    q: "Qual mecanismo bacteriano causa resistência à fagocitose?",
+    opts: ["Ácido siálico", "Superantígenos", "Cápsulas bacterianas", "Variação de antígenos"],
+    ans: 2,
+    exp: "As cápsulas bacterianas conferem resistência à fagocitose, dificultando o trabalho dos fagócitos."
+  },
+  {
+    q: "Qual mecanismo bacteriano confere resistência ao sistema complemento?",
+    opts: ["Cápsulas", "Ácido siálico", "Superantígenos", "Variação de antígenos"],
+    ans: 1,
+    exp: "O ácido siálico presente em algumas bactérias confere resistência ao sistema complemento."
+  },
+  {
+    q: "Na defesa contra bactérias intracelulares, o sistema adaptativo age por meio de quais mecanismos?",
+    opts: ["Apenas IgG e IgM", "LTCD8+ e ADCC (citotoxicidade dependente de anticorpos)", "LTH2 e IgE", "Complemento e fagocitose"],
+    ans: 1,
+    exp: "Contra bactérias intracelulares, o sistema adaptativo age por LTCD8+ e pelo ADCC, que estimula a resposta das células NK."
+  },
+  {
+    q: "Para defesa contra parasitas protozoários (intracelulares), qual célula é ativada?",
+    opts: ["TH2", "LTreg", "TH1", "TH17"],
+    ans: 2,
+    exp: "O TH1 age contra parasitas que apresentam mecanismo intracelular, como os protozoários."
+  },
+  {
+    q: "Para defesa contra helmintos, qual célula é ativada?",
+    opts: ["TH1", "LTCD8+", "LTreg", "TH2"],
+    ans: 3,
+    exp: "O TH2 é especializado no combate a helmintos, ativando eosinófilos como resposta."
+  },
+  // --- TRANSPLANTES ---
+  {
+    q: "O que é um transplante autólogo?",
+    opts: ["Entre indivíduos da mesma espécie", "Do indivíduo para si mesmo — sem rejeição", "Entre gêmeos idênticos", "Entre espécies diferentes"],
+    ans: 1,
+    exp: "No transplante autólogo, o material vai do próprio indivíduo para si mesmo, sem risco de rejeição."
+  },
+  {
+    q: "O que é um transplante singênico?",
+    opts: ["Entre indivíduos de espécies diferentes", "Do indivíduo para si mesmo", "Entre indivíduos com a mesma carga genética (como gêmeos) — sem rejeição", "Entre indivíduos da mesma espécie com HLA compatível"],
+    ans: 2,
+    exp: "O transplante singênico ocorre entre indivíduos com carga genética idêntica (como gêmeos) e não causa rejeição."
+  },
+  {
+    q: "Qual tipo de transplante tem maior risco de rejeição?",
+    opts: ["Autólogo", "Singênico", "Alogênico", "Xenogênico"],
+    ans: 3,
+    exp: "O transplante xenogênico (entre espécies diferentes, como de porco para humano) apresenta altíssima rejeição."
+  },
+  {
+    q: "Como se classifica a rejeição que ocorre de forma imediata (aguda)?",
+    opts: ["Crônica", "Hiperaguda", "Aguda", "Retardada"],
+    ans: 1,
+    exp: "A rejeição hiperaguda ocorre de forma imediata, logo após o transplante."
+  },
+  {
+    q: "A rejeição crônica ocorre em qual período de tempo?",
+    opts: ["Imediatamente após o transplante", "Dentro de 48 horas", "Em menos de 6 meses", "Em um espaço maior que 6 meses"],
+    ans: 3,
+    exp: "A rejeição crônica ocorre em um espaço de tempo maior que 6 meses após o transplante."
+  },
+  // --- DEFINIÇÕES ---
+  {
+    q: "O que é um tolerógeno?",
+    opts: ["Substância que induz anticorpos", "Substância que induz alergia", "Substância que induz tolerância (o não agir do sistema imunológico)", "Antígeno de transplante alogênico"],
+    ans: 2,
+    exp: "Tolerógeno é a substância que induz tolerância imunológica — o sistema imunológico não age contra ela."
+  },
+  {
+    q: "O que são aloantígenos?",
+    opts: ["Antígenos de transplantes xenogênicos", "Antígenos de autoimmunidade", "Antígenos de transplantes alogênicos", "Antígenos intracelulares"],
+    ans: 2,
+    exp: "Aloantígenos são os antígenos presentes em transplantes alogênicos (entre indivíduos da mesma espécie)."
+  },
+  // --- TECIDOS E DEFESAS ---
+  {
+    q: "Qual anticorpo é predominante no intestino?",
+    opts: ["IgG", "IgM", "IgE", "IgA"],
+    ans: 3,
+    exp: "O IgA é o anticorpo predominante no intestino, onde protege as mucosas."
+  },
+  {
+    q: "Qual interleucina os macrófagos intestinais secretam para evitar o recrutamento de células de defesa?",
+    opts: ["IL-17", "IL-5", "IL-10", "IL-4"],
+    ans: 2,
+    exp: "Os macrófagos intestinais secretam IL-10, que evita o recrutamento excessivo de células de defesa e mantém a tolerância no intestino."
+  },
+  {
+    q: "Que células da pele fazem reconhecimento, separação e apresentação de antígenos?",
+    opts: ["Células de Paneth", "Células M", "Células caliciformes", "Células de Langerhans"],
+    ans: 3,
+    exp: "As células de Langerhans, na pele, são especializadas no reconhecimento, separação e apresentação de antígenos."
+  },
+  {
+    q: "O que produzem as células caliciformes no sistema respiratório e intestinal?",
+    opts: ["Defensinas", "IgA", "Muco", "IL-10"],
+    ans: 2,
+    exp: "As células caliciformes produzem muco, que protege as mucosas tanto no sistema respiratório quanto no intestinal."
+  },
+  // --- HIPERSENSIBILIDADES ---
+  {
+    q: "Na hipersensibilidade tipo I, qual anticorpo é produzido durante a sensibilização?",
+    opts: ["IgG", "IgM", "IgA", "IgE"],
+    ans: 3,
+    exp: "Na hipersensibilidade tipo I, o LTH2 estimula a produção de IgE, que se liga aos mastócitos sensibilizando-os."
+  },
+  {
+    q: "Na hipersensibilidade tipo I, qual molécula é liberada na desgranulação do mastócito gerando vasodilatação?",
+    opts: ["IL-17", "Interferom Gama", "Histamina", "Complemento"],
+    ans: 2,
+    exp: "A desgranulação do mastócito libera histamina, que causa vasodilatação, aumento da permeabilidade vascular e broncoaspiração (anafilaxia)."
+  },
+  {
+    q: "O choque anafilactoide se diferencia do choque anafilático em qual aspecto?",
+    opts: ["O choque anafilactoide é mais grave", "O anafilactoide é uma reação NÃO histamínica, mas clinicamente idêntica", "O anafilático não envolve mastócitos", "O anafilactoide ocorre somente na fase imediata"],
+    ans: 1,
+    exp: "O choque anafilactoide é clinicamente idêntico ao anafilático, mas o mecanismo é diferente: não é histamínico, ocorre pela liberação de outras citocinas na fase tardia."
+  },
+  {
+    q: "Qual é o tratamento indicado para hipersensibilidade tipo I (anafilaxia)?",
+    opts: ["Apenas anti-histamínico", "Adrenalina/epinefrina + anti-histamínico + corticoide", "Apenas corticoide", "Antibióticos e corticoide"],
+    ans: 1,
+    exp: "O tratamento é adrenalina (epinefrina) para a reação imediata, anti-histamínico e corticoide para evitar a reação de fase tardia."
+  },
+  {
+    q: "Na hipersensibilidade tipo II, os anticorpos IgG e IgM atacam de qual forma?",
+    opts: ["Formam complexos imunes circulantes que se depositam nos vasos", "Ligam-se diretamente a antígenos na superfície celular ou matriz extracelular", "Ativam apenas eosinófilos via IL-5", "Estimulam a via alternativa do complemento"],
+    ans: 1,
+    exp: "Na tipo II, os anticorpos IgM e IgG se ligam diretamente a antígenos na superfície celular ou na matriz extracelular, podendo levar à fagocitose, inflamação ou disfunção celular."
+  },
+  {
+    q: "Qual é um exemplo clássico de hipersensibilidade tipo II?",
+    opts: ["Dermatite de contato", "Lúpus eritematoso sistêmico", "Eritroblastose fetal e Miastenia gravis", "Asma alérgica"],
+    ans: 2,
+    exp: "Exemplos clássicos de tipo II são a eritroblastose fetal (anticorpos anti-RH atacam o bebê) e a miastenia gravis (anticorpo bloqueia receptores de acetilcolina)."
+  },
+  {
+    q: "Na hipersensibilidade tipo III, onde os complexos imunes tendem a se depositar?",
+    opts: ["Apenas na pele", "Nos linfonodos exclusivamente", "Em tecidos com alta pressão de circulação como glomérulos renais e sinóvia", "No baço e fígado"],
+    ans: 2,
+    exp: "Os complexos imunes da tipo III circulam e se depositam principalmente em tecidos com alta pressão/circulação, como os glomérulos renais e a sinóvia das articulações."
+  },
+  {
+    q: "Qual a principal diferença clínica entre hipersensibilidade tipo II e tipo III?",
+    opts: ["Tipo II é mais grave que tipo III", "Tipo II é específica e localizada; tipo III pode ser sistêmica", "Tipo III não envolve anticorpos", "Tipo II é sempre sistêmica"],
+    ans: 1,
+    exp: "Na tipo II o antígeno é fixo e a reação é localizada e específica. Na tipo III os complexos imunes circulam e podem ser sistêmicos."
+  },
+  {
+    q: "A hipersensibilidade tipo IV é chamada de 'tardia' porque ocorre após quanto tempo do contato?",
+    opts: ["Imediatamente, em minutos", "Entre 1 a 4 horas", "Entre 48 a 72 horas", "Após 6 meses"],
+    ans: 2,
+    exp: "A hipersensibilidade tipo IV é chamada de tardia porque ocorre 48 a 72 horas após o contato — como na dermatite de contato, onde a reação aparece só no dia seguinte."
+  },
+  {
+    q: "A hipersensibilidade tipo IV envolve qual mecanismo imunológico?",
+    opts: ["IgE e mastócitos", "IgG e IgM diretamente na célula", "Complexos imunes circulantes", "Linfócito T (TH1, TH17 ou LTCD8+) — sem anticorpos"],
+    ans: 3,
+    exp: "A tipo IV não envolve anticorpos. É mediada pelo linfócito T, que se diferencia em TH1, TH17 ou LTCD8+. Transplante é um exemplo de tipo IV."
+  },
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+function startQuiz() {
+  document.getElementById('start-screen').style.display = 'none';
+  const qs = document.getElementById('quiz-section');
+  qs.style.display = 'flex';
+  renderQuestion();
+}
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  answered = false;
+  document.getElementById('next-btn').disabled = true;
+
+  document.getElementById('q-num').textContent = `QUESTÃO ${String(current + 1).padStart(2, '0')}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('prog-text').textContent = `Questão ${current + 1} de ${questions.length}`;
+  document.getElementById('score-text').textContent = `Acertos: ${score}`;
+  document.getElementById('prog-fill').style.width = `${(current / questions.length) * 100}%`;
+
+  const feedback = document.getElementById('q-feedback');
+  feedback.className = 'feedback';
+  feedback.textContent = '';
+
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i, btn);
+    opts.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx, btn) {
+  if (answered) return;
+  answered = true;
+
+  const q = questions[current];
+  const allOpts = document.querySelectorAll('.option');
+  allOpts.forEach(b => b.disabled = true);
+
+  const feedback = document.getElementById('q-feedback');
+
+  if (idx === q.ans) {
+    score++;
+    btn.classList.add('correct');
+    feedback.className = 'feedback ok show';
+    feedback.innerHTML = `✓ Correto! ${q.exp}`;
+  } else {
+    btn.classList.add('wrong');
+    allOpts[q.ans].classList.add('correct');
+    feedback.className = 'feedback err show';
+    feedback.innerHTML = `✗ Incorreto. ${q.exp}`;
+  }
+
+  document.getElementById('score-text').textContent = `Acertos: ${score}`;
+  document.getElementById('next-btn').disabled = false;
+  document.getElementById('next-btn').textContent = current === questions.length - 1 ? 'Ver resultado →' : 'Próxima →';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-section').style.display = 'none';
+  const res = document.getElementById('results');
+  res.style.display = 'flex';
+  res.style.flexDirection = 'column';
+  res.style.alignItems = 'center';
+
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-correct').textContent = score;
+  document.getElementById('res-wrong').textContent = questions.length - score;
+
+  const angle = (pct / 100) * 360;
+  document.getElementById('score-ring').style.setProperty('--score-angle', angle + 'deg');
+
+  let title, msg;
+  if (pct >= 90) { title = '🏆 Excelente!'; msg = 'Domínio impressionante de imunologia. Continue assim!'; }
+  else if (pct >= 70) { title = '👍 Muito bem!'; msg = 'Ótimo desempenho! Revise os pontos que errou para fixar o conteúdo.'; }
+  else if (pct >= 50) { title = '📚 Bom esforço!'; msg = 'Você passou da metade! Revise o material e tente novamente.'; }
+  else { title = '💪 Continue estudando!'; msg = 'Releia o resumo com atenção e tente novamente. Você vai melhorar!'; }
+
+  document.getElementById('res-title').textContent = title;
+  document.getElementById('res-msg').textContent = msg;
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  document.getElementById('results').style.display = 'none';
+  const qs = document.getElementById('quiz-section');
+  qs.style.display = 'flex';
+  renderQuestion();
+}
+</script>
+</body>
+</html>
